@@ -37,7 +37,7 @@ function makeOrder(
 
 export const seedOrders: Order[] = [
   makeOrder('ORD-001', '+855 96 123 4567', '12:00 PM', 'Extra garlic sauce please',
-    [{dishId:1,qty:2},{dishId:2,qty:1},{dishId:7,qty:2}], 'pending', 5),
+    [{dishId:1,qty:2},{dishId:2,qty:1},{dishId:7,qty:2}], 'cancelled', 5),
   makeOrder('ORD-002', '+855 77 234 5678', '12:30 PM', '',
     [{dishId:4,qty:3},{dishId:5,qty:1}], 'preparing', 18),
   makeOrder('ORD-003', '+855 12 345 6789', '1:00 PM', 'No onion on the shawarma',
@@ -55,7 +55,7 @@ export const seedOrders: Order[] = [
   makeOrder('ORD-009', '+855 78 901 2345', '2:00 PM', 'Call when ready',
     [{dishId:1,qty:1},{dishId:6,qty:1}], 'cancelled', 15),
   makeOrder('ORD-010', '+855 96 012 3456', '2:30 PM', '',
-    [{dishId:12,qty:2},{dishId:14,qty:10},{dishId:7,qty:2}], 'pending', 2),
+    [{dishId:12,qty:2},{dishId:14,qty:10},{dishId:7,qty:2}], 'cancelled', 2),
 ]
 
 // ─── Weekly chart data ────────────────────────────────────────────────────────

@@ -6,19 +6,19 @@ Vue 3 + TypeScript + Pinia + Vue Router admin panel for Shawarma Best x Paldo Bi
 
 ```bash
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://192.168.4.32:5173
 npm run build
 npm run type-check
 ```
 
 ## Pages
 
-| Route | Description |
-|---|---|
-| `/` | Dashboard — KPI stats, revenue chart, order pipeline, recent orders |
-| `/orders` | Orders — filter by status, expand to see items/remark/location, advance status |
-| `/menu` | Menu — toggle availability, edit name/price/desc per item |
-| `/settings` | Settings — shop info, hours, order channels, min-order rules |
+| Route       | Description                                                                    |
+| ----------- | ------------------------------------------------------------------------------ |
+| `/`         | Dashboard — KPI stats, revenue chart, order pipeline, recent orders            |
+| `/orders`   | Orders — filter by status, expand to see items/remark/location, advance status |
+| `/menu`     | Menu — toggle availability, edit name/price/desc per item                      |
+| `/settings` | Settings — shop info, hours, order channels, min-order rules                   |
 
 ## Tech
 

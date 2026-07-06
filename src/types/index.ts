@@ -2,27 +2,29 @@ export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed' | 'can
 export type MenuCategory = 'Ulam' | 'Merienda'
 
 export interface OrderItem {
-  dishId: number
+  dishId: number | string
   name:   string
   price:  number
   qty:    number
 }
 
 export interface Order {
-  id:         string
-  phone:      string
-  location:   string
-  mapUrl:     string
-  pickupTime: string
-  remark:     string
-  items:      OrderItem[]
-  total:      number
-  status:     OrderStatus
-  createdAt:  Date
+  apiId?:       string
+  id:           string
+  phone:        string
+  location:     string
+  mapUrl:       string
+  pickupTime:   string
+  remark:       string
+  items:        OrderItem[]
+  total:        number
+  status:       OrderStatus
+  createdAt:    Date
+  grabTracking?: string
 }
 
 export interface MenuItem {
-  id:        number
+  id:        number | string
   name:      string
   price:     number
   category:  MenuCategory
@@ -30,6 +32,7 @@ export interface MenuItem {
   desc:      string
   available: boolean
   minQty?:   number
+  img?:      string
 }
 
 export interface DailyStat {

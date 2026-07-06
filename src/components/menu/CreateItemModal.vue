@@ -1,35 +1,34 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import type { MenuItem } from "@/types";
+import { ref } from "vue";
+import type { MenuCategory } from "@/types";
 
-const props = defineProps<{ item: MenuItem }>();
 const emit = defineEmits<{
-    (e: "save", patch: { name: string; price: number; desc: string; minQty?: number; imageFile?: File }): void;
+    (
+        e: "save",
+        payload: {
+            name: string;
+            price: number;
+            category: MenuCategory;
+            desc: string;
+            available: boolean;
+            minQty?: number;
+            imageFile?: File;
+        }
+    ): void;
     (e: "close"): void;
 }>();
 
-const name = ref(props.item.name);
-const price = ref(props.item.price);
-const desc = ref(props.item.desc);
-const minQty = ref<number | null>(props.item.minQty ?? null);
+const name = ref("");
+const price = ref<number | null>(null);
+const category = ref<MenuCategory>("Ulam");
+const desc = ref("");
+const available = ref(true);
+const minQty = ref<number | null>(null);
 const imageFile = ref<File | null>(null);
 const imagePreview = ref("");
 const imageName = ref("");
 
-watch(
-    () => props.item,
-    (i) => {
-        name.value = i.name;
-        price.value = i.price;
-        desc.value = i.desc;
-        minQty.value = i.minQty ?? null;
-        imageFile.value = null;
-        imagePreview.value = "";
-        imageName.value = "";
-    }
-);
-
-function handleImageChange(event: Event) {
+async function handleImageChange(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) {
@@ -38,21 +37,30 @@ function handleImageChange(event: Event) {
         imageName.value = "";
         return;
     }
+
     imageFile.value = file;
     imageName.value = file.name;
-    const reader = new FileReader();
-    reader.onload = () => {
-        imagePreview.value = String(reader.result || "");
-    };
-    reader.readAsDataURL(file);
+    imagePreview.value = await fileToDataUrl(file);
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Failed to read image file."));
+        reader.readAsDataURL(file);
+    });
 }
 
 function save() {
-    if (!name.value.trim() || price.value <= 0) return;
+    if (!name.value.trim() || price.value === null || price.value <= 0) return;
+
     emit("save", {
         name: name.value.trim(),
         price: price.value,
+        category: category.value,
         desc: desc.value.trim(),
+        available: available.value,
         minQty: minQty.value && minQty.value > 0 ? minQty.value : undefined,
         imageFile: imageFile.value || undefined
     });
@@ -63,7 +71,7 @@ function save() {
     <div class="overlay" @click.self="emit('close')">
         <div class="modal">
             <div class="modal-head">
-                <h3>Edit Item</h3>
+                <h3>Add Menu Item</h3>
                 <button class="close-btn" @click="emit('close')">×</button>
             </div>
 
@@ -71,35 +79,55 @@ function save() {
                 <label>Item name</label>
                 <input v-model="name" type="text" placeholder="Item name" />
             </div>
-            <div class="field">
-                <label>Price (USD)</label>
-                <div class="input-prefix-wrap">
-                    <span class="prefix">$</span>
-                    <input v-model.number="price" type="number" step="0.25" min="0" placeholder="0.00" />
+
+            <div class="field two-col">
+                <div>
+                    <label>Price (USD)</label>
+                    <div class="input-prefix-wrap">
+                        <span class="prefix">$</span>
+                        <input v-model.number="price" type="number" step="0.25" min="0" placeholder="0.00" />
+                    </div>
+                </div>
+                <div>
+                    <label>Category</label>
+                    <select v-model="category">
+                        <option value="Ulam">Ulam</option>
+                        <option value="Merienda">Merienda</option>
+                    </select>
                 </div>
             </div>
+
             <div class="field">
                 <label>Description</label>
-                <textarea v-model="desc" rows="2" placeholder="Short description…"></textarea>
+                <textarea v-model="desc" rows="2" placeholder="Short description..."></textarea>
             </div>
 
             <div class="field">
-                <label>Min Qty</label>
-                <input v-model.number="minQty" type="number" min="1" step="1" placeholder="Optional" />
-            </div>
-
-            <div class="field">
-                <label>Picture</label>
+                <label>Image</label>
                 <input type="file" accept="image/*" @change="handleImageChange" />
                 <div v-if="imagePreview" class="img-preview-wrap">
-                    <img :src="imagePreview" alt="Preview" class="img-preview" />
+                    <img :src="imagePreview" alt="Menu preview" class="img-preview" />
                     <div class="img-meta">{{ imageName }}</div>
+                </div>
+            </div>
+
+            <div class="field two-col">
+                <div>
+                    <label>Min Qty</label>
+                    <input v-model.number="minQty" type="number" min="1" step="1" placeholder="Optional" />
+                </div>
+                <div>
+                    <label>Status</label>
+                    <select v-model="available">
+                        <option :value="true">Available</option>
+                        <option :value="false">Hidden</option>
+                    </select>
                 </div>
             </div>
 
             <div class="modal-foot">
                 <button class="btn-cancel" @click="emit('close')">Cancel</button>
-                <button class="btn-save" @click="save">Save changes</button>
+                <button class="btn-save" @click="save">Create Item</button>
             </div>
         </div>
     </div>
@@ -120,7 +148,7 @@ function save() {
     background: #fff;
     border-radius: 16px;
     width: 100%;
-    max-width: 420px;
+    max-width: 520px;
     padding: 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
@@ -142,6 +170,11 @@ function save() {
 .field {
     margin-bottom: 14px;
 }
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
 .field label {
     display: block;
     font-size: 12px;
@@ -152,7 +185,8 @@ function save() {
     margin-bottom: 6px;
 }
 .field input,
-.field textarea {
+.field textarea,
+.field select {
     width: 100%;
     border: 1.5px solid var(--border);
     border-radius: 8px;
@@ -164,8 +198,13 @@ function save() {
     outline: none;
     background: #fff;
 }
+.field input[type="file"] {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+}
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field select:focus {
     border-color: var(--brand);
 }
 .field textarea {
@@ -197,6 +236,23 @@ function save() {
     border-radius: 0;
     flex: 1;
 }
+.img-preview-wrap {
+    margin-top: 8px;
+}
+.img-preview {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+}
+.img-meta {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-soft);
+    word-break: break-all;
+}
 
 .modal-foot {
     display: flex;
@@ -224,24 +280,9 @@ function save() {
     background: var(--brand-deep);
 }
 
-.field input[type="file"] {
-    padding: 8px 12px;
-    margin-bottom: 10px;
-}
-.img-preview-wrap {
-    margin-top: 8px;
-}
-.img-preview {
-    width: 100%;
-    max-height: 180px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-}
-.img-meta {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--text-soft);
-    word-break: break-all;
+@media (max-width: 560px) {
+    .two-col {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
