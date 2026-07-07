@@ -2,6 +2,10 @@
 import { ref } from "vue";
 import type { MenuCategory } from "@/types";
 
+const props = defineProps<{
+    categories?: MenuCategory[];
+}>();
+
 const emit = defineEmits<{
     (
         e: "save",
@@ -53,12 +57,13 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 function save() {
-    if (!name.value.trim() || price.value === null || price.value <= 0) return;
+    const normalizedCategory = category.value.trim();
+    if (!name.value.trim() || price.value === null || price.value <= 0 || !normalizedCategory) return;
 
     emit("save", {
         name: name.value.trim(),
         price: price.value,
-        category: category.value,
+        category: normalizedCategory,
         desc: desc.value.trim(),
         available: available.value,
         minQty: minQty.value && minQty.value > 0 ? minQty.value : undefined,
@@ -90,10 +95,10 @@ function save() {
                 </div>
                 <div>
                     <label>Category</label>
-                    <select v-model="category">
-                        <option value="Ulam">Ulam</option>
-                        <option value="Merienda">Merienda</option>
-                    </select>
+                    <input v-model="category" type="text" list="menu-categories" placeholder="e.g. Ulam" />
+                    <datalist id="menu-categories">
+                        <option v-for="option in props.categories || []" :key="option" :value="option"></option>
+                    </datalist>
                 </div>
             </div>
 

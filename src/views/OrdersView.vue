@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import { useOrdersStore } from "@/stores/orders";
+import { useMenuStore } from "@/stores/menu";
 import OrderCard from "@/components/orders/OrderCard.vue";
+import CreateOrderModal from "@/components/orders/CreateOrderModal.vue";
 import type { OrderStatus } from "@/types";
 
 const store = useOrdersStore();
+const menu = useMenuStore();
+const creating = ref(false);
 
 type Filter = "all" | OrderStatus;
 const activeFilter = ref<Filter>("all");
@@ -35,8 +39,23 @@ async function handleStatusUpdate(id: string, status: any, grabTracking?: string
     await store.updateStatus(id, status, grabTracking);
 }
 
+async function handleCreateOrder(payload: {
+    phone: string;
+    location?: string;
+    mapUrl?: string;
+    pickupTime: string;
+    remark?: string;
+    items: Array<{ menuItemId: string; qty: number }>;
+}) {
+    const ok = await store.createOrder(payload);
+    if (!ok) return;
+    creating.value = false;
+    await refreshOrders();
+}
+
 onMounted(() => {
     refreshOrders();
+    menu.fetchMenu();
 });
 
 watch(activeFilter, () => {
@@ -46,6 +65,11 @@ watch(activeFilter, () => {
 
 <template>
     <div class="orders-view">
+        <div class="orders-head">
+            <h2>Orders</h2>
+            <button class="btn-create" @click="creating = true">+ Create Order</button>
+        </div>
+
         <!-- Filter tabs -->
         <div class="filter-bar">
             <button v-for="f in filters" :key="f.key" class="filter-btn" :class="{ active: activeFilter === f.key }" @click="activeFilter = f.key">
@@ -72,6 +96,14 @@ watch(activeFilter, () => {
             <div class="empty-icon">📋</div>
             <p>No orders in this category yet.</p>
         </div>
+
+        <CreateOrderModal
+            v-if="creating"
+            :menu-items="menu.items"
+            :submitting="store.loading"
+            @create="handleCreateOrder"
+            @close="creating = false"
+        />
     </div>
 </template>
 
@@ -80,6 +112,31 @@ watch(activeFilter, () => {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.orders-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.orders-head h2 {
+    font-size: 20px;
+    color: var(--text);
+}
+
+.btn-create {
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: var(--brand);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.btn-create:hover {
+    background: var(--brand-deep);
 }
 
 .filter-bar {

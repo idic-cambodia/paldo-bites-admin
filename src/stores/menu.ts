@@ -37,7 +37,8 @@ type CreateMenuPayload = {
 type UpdateMenuPayload = Partial<Pick<MenuItem, 'name' | 'price' | 'category' | 'desc' | 'available' | 'minQty'>> & { imageFile?: File }
 
 function asCategory(value: string | undefined): MenuItem['category'] {
-  return value === 'Merienda' ? 'Merienda' : 'Ulam'
+  const normalized = value?.trim()
+  return normalized && normalized.length > 0 ? normalized : 'Ulam'
 }
 
 export const useMenuStore = defineStore('menu', () => {

@@ -5,6 +5,7 @@ import { seedOrders } from '@/data/mockData'
 import { useAuthStore } from '@/stores/auth'
 
 const ORDERS_ENDPOINT = '/api/admin/orders'
+const CREATE_ORDER_ENDPOINT = '/api/admin/orders'
 
 type ApiOrderItem = {
   menuItemId?: string
@@ -40,11 +41,42 @@ type OrdersResponse = {
   }
 }
 
+type CreateOrderPayload = {
+  phone: string
+  location?: string
+  mapUrl?: string
+  pickupTime: string
+  remark?: string
+  items: Array<{ menuItemId: string; qty: number }>
+}
+
 function asOrderStatus(value: string | undefined): OrderStatus {
   if (value === 'pending' || value === 'preparing' || value === 'ready' || value === 'completed' || value === 'cancelled') {
     return value
   }
   return 'pending'
+}
+
+function mapApiOrder(order: ApiOrder, fallbackIndex = 0): Order {
+  return {
+    apiId: order._id || order.orderId || `N/A-${fallbackIndex}`,
+    id: order.orderId || order._id || `N/A-${fallbackIndex}`,
+    phone: order.phone || '-',
+    location: order.location || '-',
+    mapUrl: order.mapUrl || '#',
+    pickupTime: order.pickupTime || '-',
+    remark: order.remark || '',
+    items: (order.items ?? []).map((item, index) => ({
+      dishId: item.menuItemId || `${index}`,
+      name: item.name || 'Unknown item',
+      price: Number(item.price ?? 0),
+      qty: Number(item.qty ?? 0),
+    })),
+    total: Number(order.total ?? 0),
+    status: asOrderStatus(order.status),
+    createdAt: order.createdAt ? new Date(order.createdAt) : new Date(),
+    grabTracking: order.grabTracking || undefined,
+  }
 }
 
 export const useOrdersStore = defineStore('orders', () => {
@@ -170,25 +202,7 @@ export const useOrdersStore = defineStore('orders', () => {
         throw new Error(body.message || 'Failed to load orders.')
       }
 
-      orders.value = (body.data ?? []).map((order) => ({
-        apiId: order._id || order.orderId || 'N/A',
-        id: order.orderId || order._id || 'N/A',
-        phone: order.phone || '-',
-        location: order.location || '-',
-        mapUrl: order.mapUrl || '#',
-        pickupTime: order.pickupTime || '-',
-        remark: order.remark || '',
-        items: (order.items ?? []).map((item, index) => ({
-          dishId: item.menuItemId || `${index}`,
-          name: item.name || 'Unknown item',
-          price: Number(item.price ?? 0),
-          qty: Number(item.qty ?? 0),
-        })),
-        total: Number(order.total ?? 0),
-        status: asOrderStatus(order.status),
-        createdAt: order.createdAt ? new Date(order.createdAt) : new Date(),
-        grabTracking: order.grabTracking || undefined,
-      }))
+      orders.value = (body.data ?? []).map((order, index) => mapApiOrder(order, index))
 
       pagination.value = {
         page: Number(body.pagination?.page ?? params?.page ?? 1),
@@ -205,8 +219,54 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  async function createOrder(payload: CreateOrderPayload) {
+    const auth = useAuthStore()
+    if (!auth.token) {
+      error.value = 'Not authenticated.'
+      return false
+    }
+
+    const authorization = auth.token.startsWith('Bearer ') ? auth.token : `Bearer ${auth.token}`
+
+    loading.value = true
+    error.value = ''
+    try {
+      const response = await fetch(CREATE_ORDER_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authorization,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const body = (await response.json().catch(() => ({}))) as {
+        success?: boolean
+        message?: string
+        data?: ApiOrder
+      }
+
+      if (!response.ok || body.success === false) {
+        throw new Error(body.message || 'Failed to create order.')
+      }
+
+      if (body.data) {
+        orders.value.unshift(mapApiOrder(body.data, orders.value.length))
+      } else {
+        await fetchOrders({ page: 1, limit: pagination.value.limit })
+      }
+
+      return true
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to create order.'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return { orders, pending, preparing, ready, completed,
     todayRevenue, todayOrders, todayItemsSold,
     loading, error, pagination,
-    updateStatus, addOrder, addNewOrder, updateOrderStatus, fetchOrders }
+    updateStatus, addOrder, addNewOrder, updateOrderStatus, fetchOrders, createOrder }
 })

@@ -1,5 +1,5 @@
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled'
-export type MenuCategory = 'Ulam' | 'Merienda'
+export type MenuCategory = string
 
 export interface OrderItem {
   dishId: number | string

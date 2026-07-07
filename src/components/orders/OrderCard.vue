@@ -76,9 +76,9 @@ const nextLabel: Record<string, string> = {
                 </div>
             </div>
 
-            <!-- grab tracking input (when ready) -->
-            <div class="grab-input-section" v-if="order.status === 'ready'">
-                <label class="grab-label">🛵 Add Grab Tracking Link (when ready):</label>
+            <!-- grab tracking input (when ready/completed) -->
+            <div class="grab-input-section" v-if="order.status === 'ready' || order.status === 'completed'">
+                <label class="grab-label">🛵 Add Grab Tracking Link:</label>
                 <input v-model="grabTrackingInput" type="text" placeholder="https://grab.com/track/..." class="grab-input" />
             </div>
 
@@ -91,6 +91,9 @@ const nextLabel: Record<string, string> = {
                     {{ nextLabel[order.status] }}
                 </button>
                 <button class="btn-cancel" @click="emit('update-status', order.id, 'cancelled')">✕ Cancel</button>
+            </div>
+            <div class="actions" v-else-if="order.status === 'completed'">
+                <button class="btn-next" @click="emit('update-status', order.id, 'completed', grabTrackingInput)">Save Tracking</button>
             </div>
         </div>
     </div>

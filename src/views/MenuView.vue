@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useMenuStore } from "@/stores/menu";
 import EditItemModal from "@/components/menu/EditItemModal.vue";
 import CreateItemModal from "@/components/menu/CreateItemModal.vue";
@@ -11,7 +11,11 @@ const editing = ref<MenuItem | null>(null);
 const creating = ref(false);
 
 const filtered = computed(() => menu.items.filter((i) => i.category === activeTab.value));
-const tabs: MenuCategory[] = ["Ulam", "Merienda"];
+const tabs = computed<MenuCategory[]>(() => {
+    const defaults: MenuCategory[] = ["Ulam", "Merienda"];
+    const discovered = menu.items.map((item) => item.category).filter((value) => value && value.trim().length > 0);
+    return [...new Set([...defaults, ...discovered])];
+});
 
 async function saveEdit(patch: { name: string; price: number; desc: string; minQty?: number; imageFile?: File }) {
     if (editing.value) {
@@ -33,6 +37,12 @@ async function deleteItem(item: MenuItem) {
 
 onMounted(() => {
     menu.fetchMenu();
+});
+
+watch(tabs, (nextTabs) => {
+    if (!nextTabs.includes(activeTab.value) && nextTabs.length) {
+        activeTab.value = nextTabs[0];
+    }
 });
 
 const solveImageUrl = (url: string | null | undefined) => {
@@ -109,7 +119,7 @@ const solveImageUrl = (url: string | null | undefined) => {
 
         <!-- Edit modal -->
         <EditItemModal v-if="editing" :item="editing" @save="saveEdit" @close="editing = null" />
-        <CreateItemModal v-if="creating" @save="createItem" @close="creating = false" />
+        <CreateItemModal v-if="creating" :categories="tabs" @save="createItem" @close="creating = false" />
     </div>
 </template>
 
