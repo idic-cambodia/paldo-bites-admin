@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 
 const TOKEN_KEY = 'paldo_admin_token'
 const ADMIN_NAME_KEY = 'paldo_admin_name'
-const LOGIN_ENDPOINT = 'http://192.168.4.32:4000/api/admin/auth/login'
-const VERIFY_ENDPOINT = 'http://192.168.4.32:4000/api/admin/auth/verify'
+const LOGIN_ENDPOINT = '/api/admin/auth/login'
+const VERIFY_ENDPOINT = '/api/admin/auth/verify'
 
 type LoginPayload = {
   identifier: string

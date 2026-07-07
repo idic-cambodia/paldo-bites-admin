@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
-const SETTINGS_ENDPOINT = "http://192.168.4.32:4000/api/admin/settings";
+const SETTINGS_ENDPOINT = "/api/admin/settings";
 
 type SettingsResponse = {
     success?: boolean;

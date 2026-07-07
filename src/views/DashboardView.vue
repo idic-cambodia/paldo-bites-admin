@@ -11,7 +11,7 @@ const orders = useOrdersStore();
 const auth = useAuthStore();
 const router = useRouter();
 
-const DASHBOARD_ENDPOINT = "http://192.168.4.32:4000/api/admin/dashboard/stats";
+const DASHBOARD_ENDPOINT = "/api/admin/dashboard/stats";
 
 type DashboardApiResponse = {
     success?: boolean;

@@ -11,7 +11,7 @@
 import { ref, onUnmounted } from 'vue'
 import { io, Socket } from 'socket.io-client'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.4.32:4000'
+const API_URL = import.meta.env.VITE_BASE_URL
 
 // ── Shared event names (mirror of server SOCKET_EVENTS) ────────────────────
 export const SOCKET_EVENTS = {

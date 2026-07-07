@@ -34,6 +34,12 @@ async function deleteItem(item: MenuItem) {
 onMounted(() => {
     menu.fetchMenu();
 });
+
+const solveImageUrl = (url: string | null | undefined) => {
+    if (!url) return undefined;
+    if (url.startsWith("http")) return url;
+    return `${window.location.origin}${url}`;
+};
 </script>
 
 <template>
@@ -76,7 +82,7 @@ onMounted(() => {
                 <tbody>
                     <tr v-for="item in filtered" :key="item.id" :class="{ 'row-hidden': !item.available }">
                         <td class="icon-cell">
-                            <img v-if="item.img" :src="item.img" :alt="item.name" class="item-img" />
+                            <img v-if="item.img" :src="solveImageUrl(item.img)" :alt="item.name" class="item-img" />
                             <span v-else>{{ item.icon }}</span>
                         </td>
                         <td>

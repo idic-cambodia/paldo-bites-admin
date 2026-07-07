@@ -4,7 +4,7 @@ import type { MenuItem } from '@/types'
 import { menuItems as seed } from '@/data/mockData'
 import { useAuthStore } from '@/stores/auth'
 
-const MENU_ENDPOINT = 'http://192.168.4.32:4000/api/admin/menu'
+const MENU_ENDPOINT = '/api/admin/menu'
 
 type ApiMenuItem = {
   _id?: string

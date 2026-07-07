@@ -4,7 +4,7 @@ import type { Order, OrderStatus } from '@/types'
 import { seedOrders } from '@/data/mockData'
 import { useAuthStore } from '@/stores/auth'
 
-const ORDERS_ENDPOINT = 'http://192.168.4.32:4000/api/admin/orders'
+const ORDERS_ENDPOINT = '/api/admin/orders'
 
 type ApiOrderItem = {
   menuItemId?: string
