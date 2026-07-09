@@ -5,6 +5,7 @@ import L, { type LeafletMouseEvent, type Map as LeafletMap, type Marker } from "
 import "leaflet/dist/leaflet.css";
 
 type CreateOrderPayload = {
+    name: string;
     phone: string;
     location?: string;
     mapUrl?: string;
@@ -23,6 +24,7 @@ const emit = defineEmits<{
     (e: "close"): void;
 }>();
 
+const name = ref("");
 const phone = ref("");
 const location = ref("11.556374, 104.928207");
 const remark = ref("");
@@ -170,6 +172,7 @@ function removeRow(index: number) {
 
 function submit() {
     const payload: CreateOrderPayload = {
+        name: name.value.trim() || "-",
         phone: phone.value.trim(),
         location: location.value.trim() || undefined,
         mapUrl: mapUrl.value,
@@ -178,7 +181,7 @@ function submit() {
         items: rows.value.filter((row) => row.menuItemId && row.qty > 0).map((row) => ({ menuItemId: row.menuItemId, qty: Number(row.qty) }))
     };
 
-    if (!payload.phone || !payload.pickupTime || payload.items.length === 0) return;
+    if (!payload.name || !payload.phone || !payload.pickupTime || payload.items.length === 0) return;
     emit("create", payload);
 }
 
@@ -214,6 +217,13 @@ const solveImageUrl = (url: string | null | undefined) => {
                 <button class="close-btn" @click="emit('close')">x</button>
             </div>
 
+            <!-- NAME -->
+            <div class="field">
+                <label>Name</label>
+                <input v-model="name" type="text" placeholder="Shawarma Paldo" />
+            </div>
+
+            <!-- PHONE, PICKUP TIME -->
             <div class="grid two">
                 <div class="field">
                     <label>Phone</label>
@@ -227,6 +237,7 @@ const solveImageUrl = (url: string | null | undefined) => {
                 </div>
             </div>
 
+            <!-- LOCATION -->
             <div class="field">
                 <div class="location-head">
                     <label>Location</label>
@@ -237,6 +248,7 @@ const solveImageUrl = (url: string | null | undefined) => {
                 <p v-if="locationError" class="error-text">{{ locationError }}</p>
             </div>
 
+            <!-- MAP URL -->
             <div class="field">
                 <label>Map URL</label>
                 <input :value="mapUrl || ''" type="text" readonly />
@@ -246,9 +258,10 @@ const solveImageUrl = (url: string | null | undefined) => {
                 <div ref="mapEl" class="map-canvas"></div>
             </div>
 
+            <!-- REMARK -->
             <div class="field">
                 <label>Remark</label>
-                <input v-model="remark" type="text" placeholder="Tester" />
+                <input v-model="remark" type="text" placeholder="Any special instructions?" />
             </div>
 
             <div class="items-head">

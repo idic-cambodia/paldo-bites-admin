@@ -146,9 +146,10 @@ export const useOrdersStore = defineStore('orders', () => {
     orders.value.unshift(order)
   }
 
-  function addNewOrder(payload: { orderId: string; phone: string; pickupTime: string; total: number; itemCount: number; createdAt: string }) {
+  function addNewOrder(payload: { orderId: string; name: string; phone: string; pickupTime: string; total: number; itemCount: number; createdAt: string }) {
     const newOrder: Order = {
       apiId: payload.orderId,
+      name: payload.name || '-',
       id: payload.orderId,
       phone: payload.phone,
       location: '-',
