@@ -39,6 +39,7 @@ const nextLabel: Record<string, string> = {
                 <OrderStatusBadge :status="order.status" />
             </div>
             <div class="info-col">
+                <span class="phone">{{ order.name }}</span>
                 <span class="phone">{{ order.phone }}</span>
                 <span class="pickup">🕐 {{ order.pickupTime }}</span>
             </div>

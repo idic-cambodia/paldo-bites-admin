@@ -17,6 +17,7 @@ type ApiOrderItem = {
 type ApiOrder = {
   _id?: string
   orderId?: string
+  name?: string
   phone?: string
   location?: string
   mapUrl?: string
@@ -61,6 +62,7 @@ function mapApiOrder(order: ApiOrder, fallbackIndex = 0): Order {
   return {
     apiId: order._id || order.orderId || `N/A-${fallbackIndex}`,
     id: order.orderId || order._id || `N/A-${fallbackIndex}`,
+    name: order.name || '-',
     phone: order.phone || '-',
     location: order.location || '-',
     mapUrl: order.mapUrl || '#',

@@ -84,17 +84,22 @@ export const useMenuStore = defineStore('menu', () => {
         throw new Error(body.message || 'Failed to load menu items.')
       }
 
-      items.value = (body.data ?? []).map((item, index) => ({
-        id: item._id || `${index}`,
-        name: item.name || 'Unnamed item',
-        price: Number(item.price ?? 0),
-        category: asCategory(item.category),
-        icon: item.icon || '🍽️',
-        desc: item.desc || '',
-        available: Boolean(item.available),
-        minQty: item.minQty,
-        img: item.img ? item.img.replace(/^https?:\/\/[^/]+/, '') : undefined,
-      }))
+      items.value = (body.data ?? []).map((item, index) => {
+        // Handle available as: boolean true/false 
+        const isAvailable = item.available !== undefined ? Boolean(item.available) : true
+        
+        return {
+          id: item._id || `${index}`,
+          name: item.name || 'Unnamed item',
+          price: Number(item.price ?? 0),
+          category: asCategory(item.category),
+          icon: item.icon || '🍽️',
+          desc: item.desc || '',
+          available: isAvailable,
+          minQty: item.minQty,
+          img: item.img ? item.img.replace(/^https?:\/\/[^/]+/, '') : undefined,
+        }
+      })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load menu items.'
       items.value = []
@@ -187,7 +192,8 @@ export const useMenuStore = defineStore('menu', () => {
         throw new Error(body.message || 'Failed to update menu item.')
       }
 
-      await fetchMenu()
+      // Update local state optimistically
+      updateItem(id, payload as any)
       return true
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update menu item.'

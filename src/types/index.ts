@@ -11,6 +11,7 @@ export interface OrderItem {
 export interface Order {
   apiId?:       string
   id:           string
+  name:         string
   phone:        string
   location:     string
   mapUrl:       string
