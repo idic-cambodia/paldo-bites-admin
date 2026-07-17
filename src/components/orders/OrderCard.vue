@@ -41,7 +41,7 @@ const nextLabel: Record<string, string> = {
             <div class="info-col">
                 <span class="phone">{{ order.name }}</span>
                 <span class="phone">{{ order.phone }}</span>
-                <span class="pickup">🕐 {{ order.pickupTime }}</span>
+                <span class="pickup">{{ order.pickupTime == "-" ? "Delivery 🕐 " + order.deliveryTime : "PickUp 🕐 " + order.pickupTime }}</span>
             </div>
             <div class="total-col">
                 <span class="total">${{ order.total.toFixed(2) }}</span>
@@ -67,7 +67,7 @@ const nextLabel: Record<string, string> = {
                     <span class="meta-label">📝 Remark</span>
                     <span class="meta-val">{{ order.remark }}</span>
                 </div>
-                <div class="meta-item">
+                <div class="meta-item" v-if="order.location && order.location !== '-'">
                     <span class="meta-label">📍 Location</span>
                     <a :href="order.mapUrl" target="_blank" rel="noopener" class="map-link"> {{ order.location }} → </a>
                 </div>

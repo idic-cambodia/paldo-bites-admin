@@ -6,6 +6,7 @@ const nav = [
     { to: "/", icon: "▦", label: "Dashboard" },
     { to: "/orders", icon: "📋", label: "Orders" },
     { to: "/menu", icon: "🍽️", label: "Menu" },
+    { to: "/facebook", icon: "📘", label: "Facebook" },
     { to: "/settings", icon: "⚙️", label: "Settings" }
 ];
 </script>

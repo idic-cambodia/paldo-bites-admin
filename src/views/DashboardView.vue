@@ -158,7 +158,7 @@ onMounted(() => {
                         <tr>
                             <th>Order ID</th>
                             <th>Phone</th>
-                            <th>Pickup</th>
+                            <th>Delivery/Pickup</th>
                             <th>Items</th>
                             <th>Total</th>
                             <th>Status</th>
@@ -169,7 +169,7 @@ onMounted(() => {
                         <tr v-for="o in recentOrders" :key="o.id" @click="router.push('/orders')" class="order-row">
                             <td class="id-cell">{{ o.id }}</td>
                             <td>{{ o.phone }}</td>
-                            <td>{{ o.pickupTime }}</td>
+                            <td>{{ o.pickupTime == "-" ? "🛵 " : "📍 " }}{{ o.deliveryTime || o.pickupTime }}</td>
                             <td>{{ o.items.reduce((s, i) => s + i.qty, 0) }} items</td>
                             <td class="total-cell">${{ o.total.toFixed(2) }}</td>
                             <td><OrderStatusBadge :status="o.status" /></td>

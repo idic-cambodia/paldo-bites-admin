@@ -20,8 +20,10 @@ type ApiOrder = {
   name?: string
   phone?: string
   location?: string
+  locationLabel?: string
   mapUrl?: string
   pickupTime?: string
+  deliveryTime?: string
   remark?: string
   items?: ApiOrderItem[]
   total?: number
@@ -65,8 +67,10 @@ function mapApiOrder(order: ApiOrder, fallbackIndex = 0): Order {
     name: order.name || '-',
     phone: order.phone || '-',
     location: order.location || '-',
+    locationLabel: order.locationLabel || '-',
     mapUrl: order.mapUrl || '#',
     pickupTime: order.pickupTime || '-',
+    deliveryTime: order.deliveryTime || '-',
     remark: order.remark || '',
     items: (order.items ?? []).map((item, index) => ({
       dishId: item.menuItemId || `${index}`,
@@ -153,8 +157,10 @@ export const useOrdersStore = defineStore('orders', () => {
       id: payload.orderId,
       phone: payload.phone,
       location: '-',
+      locationLabel: '-',
       mapUrl: '#',
       pickupTime: payload.pickupTime,
+      deliveryTime: '',
       remark: '',
       items: Array(payload.itemCount).fill(null).map((_, i) => ({
         dishId: `${i}`,

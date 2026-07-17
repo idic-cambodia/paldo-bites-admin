@@ -14,8 +14,10 @@ export interface Order {
   name:         string
   phone:        string
   location:     string
+  locationLabel:string
   mapUrl:       string
   pickupTime:   string
+  deliveryTime: string
   remark:       string
   items:        OrderItem[]
   total:        number

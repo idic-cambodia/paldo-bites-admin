@@ -30,9 +30,9 @@ function makeOrder(
   })
   const total = orderItems.reduce((s, i) => s + i.price * i.qty, 0)
   const createdAt = new Date(Date.now() - minutesAgo * 60_000)
-  return { id, name: '-', phone, location: '11.556374, 104.928207',
+  return { id, name: '-', phone, location: '11.556374, 104.928207',locationLabel: 'Phnom Penh, Cambodia',
     mapUrl: 'https://www.google.com/maps?q=11.556374,104.928207',
-    pickupTime, remark, items: orderItems, total, status, createdAt }
+    pickupTime,deliveryTime: '', remark, items: orderItems, total, status, createdAt }
 }
 
 export const seedOrders: Order[] = [
