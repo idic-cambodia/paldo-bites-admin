@@ -12,6 +12,8 @@ type LoginPayload = {
 }
 
 type LoginResponse = {
+  status?: number
+  msg?: string
   success?: boolean
   message?: string
   token?: string
@@ -37,8 +39,14 @@ type LoginResponse = {
 }
 
 type VerifyResponse = {
+  status?: number
+  msg?: string
   success?: boolean
   message?: string
+  data?: {
+    success?: boolean
+    message?: string
+  }
 }
 
 function readStorage(key: string): string {
@@ -85,8 +93,8 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       const body = (await response.json().catch(() => ({}))) as LoginResponse
-      if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Login failed. Please check your credentials.')
+      if (!response.ok || body.status === 401 || body.success === false) {
+        throw new Error(body.msg || body.message || 'Login failed. Please check your credentials.')
       }
 
       const nextToken =
@@ -123,7 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
     })
 
     const body = (await response.json().catch(() => ({}))) as VerifyResponse
-    const isValid = response.ok && body.success === true
+    const isValid = response.ok && (body.data?.success === true || body.success === true)
 
     if (!isValid) {
       clearAuth()

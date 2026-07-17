@@ -5,6 +5,8 @@ import { useAuthStore } from "@/stores/auth";
 const SETTINGS_ENDPOINT = "/api/admin/settings";
 
 type SettingsResponse = {
+    status?: number;
+    msg?: string;
     success?: boolean;
     message?: string;
     data?: {
@@ -91,7 +93,7 @@ async function save() {
 
         const body = (await response.json().catch(() => ({}))) as SettingsResponse;
         if (!response.ok || body.success === false) {
-            throw new Error(body.message || "Failed to update settings.");
+            throw new Error(body.msg || body.message || "Failed to update settings.");
         }
 
         saved.value = true;
@@ -127,7 +129,7 @@ async function fetchSettings() {
 
         const body = (await response.json().catch(() => ({}))) as SettingsResponse;
         if (!response.ok || body.success === false || !body.data) {
-            throw new Error(body.message || "Failed to load settings.");
+            throw new Error(body.msg || body.message || "Failed to load settings.");
         }
 
         shopName.value = body.data.shopName || "";

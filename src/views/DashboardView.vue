@@ -14,6 +14,8 @@ const router = useRouter();
 const DASHBOARD_ENDPOINT = "/api/admin/dashboard/stats";
 
 type DashboardApiResponse = {
+    status?: number;
+    msg?: string;
     success?: boolean;
     message?: string;
     data?: {
@@ -84,7 +86,7 @@ async function fetchDashboardStats() {
         });
 
         const body = (await response.json().catch(() => ({}))) as DashboardApiResponse;
-        if (response.ok && body.success && body.data) {
+        if (response.ok && body.data && (body.status === 200 || body.success !== false)) {
             dashboardData.value = body.data;
         }
     } finally {

@@ -24,6 +24,8 @@ import type {
 const FB_BASE = "/api/admin/facebook";
 
 type ApiEnvelope<T> = {
+    status?: number;
+    msg?: string;
     success?: boolean;
     message?: string;
     data?: T;
@@ -50,7 +52,7 @@ async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): P
     const response = await fetch(`${FB_BASE}${path}`, { ...options, headers });
     const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T>;
     if (!response.ok || body.success === false) {
-        throw new Error(body.message || "Facebook request failed.");
+        throw new Error(body.msg || body.message || "Facebook request failed.");
     }
     return body;
 }

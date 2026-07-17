@@ -19,6 +19,8 @@ type ApiMenuItem = {
 }
 
 type MenuResponse = {
+  status?: number
+  msg?: string
   success?: boolean
   message?: string
   data?: ApiMenuItem[]
@@ -81,7 +83,7 @@ export const useMenuStore = defineStore('menu', () => {
 
       const body = (await response.json().catch(() => ({}))) as MenuResponse
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to load menu items.')
+        throw new Error(body.msg || body.message || 'Failed to load menu items.')
       }
 
       items.value = (body.data ?? []).map((item, index) => {
@@ -143,9 +145,9 @@ export const useMenuStore = defineStore('menu', () => {
         body: formData,
       })
 
-      const body = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string }
+      const body = (await response.json().catch(() => ({}))) as { status?: number; msg?: string; success?: boolean; message?: string }
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to create menu item.')
+        throw new Error(body.msg || body.message || 'Failed to create menu item.')
       }
 
       await fetchMenu()
@@ -187,9 +189,9 @@ export const useMenuStore = defineStore('menu', () => {
         body: formData,
       })
 
-      const body = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string }
+      const body = (await response.json().catch(() => ({}))) as { status?: number; msg?: string; success?: boolean; message?: string }
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to update menu item.')
+        throw new Error(body.msg || body.message || 'Failed to update menu item.')
       }
 
       // Update local state optimistically
@@ -222,9 +224,9 @@ export const useMenuStore = defineStore('menu', () => {
         },
       })
 
-      const body = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string }
+      const body = (await response.json().catch(() => ({}))) as { status?: number; msg?: string; success?: boolean; message?: string }
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to delete menu item.')
+        throw new Error(body.msg || body.message || 'Failed to delete menu item.')
       }
 
       await fetchMenu()

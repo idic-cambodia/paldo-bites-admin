@@ -33,9 +33,17 @@ type ApiOrder = {
 }
 
 type OrdersResponse = {
+  status?: number
+  msg?: string
   success?: boolean
   message?: string
-  data?: ApiOrder[]
+  data?: {
+    page?: number | null
+    limit?: number | null
+    total?: number | null
+    pages?: number | null
+    list?: ApiOrder[]
+  } | ApiOrder[]
   pagination?: {
     page?: number | null
     limit?: number | null
@@ -132,9 +140,9 @@ export const useOrdersStore = defineStore('orders', () => {
         body: JSON.stringify(body),
       })
 
-      const responseBody = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string }
+      const responseBody = (await response.json().catch(() => ({}))) as { status?: number; msg?: string; success?: boolean; message?: string }
       if (!response.ok || responseBody.success === false) {
-        throw new Error(responseBody.message || 'Failed to update order status.')
+        throw new Error(responseBody.msg || responseBody.message || 'Failed to update order status.')
       }
 
       order.status = status
@@ -208,16 +216,17 @@ export const useOrdersStore = defineStore('orders', () => {
 
       const body = (await response.json().catch(() => ({}))) as OrdersResponse
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to load orders.')
+        throw new Error(body.msg || body.message || 'Failed to load orders.')
       }
 
-      orders.value = (body.data ?? []).map((order, index) => mapApiOrder(order, index))
+      const result = Array.isArray(body.data) ? { list: body.data } : body.data
+      orders.value = (result?.list ?? []).map((order, index) => mapApiOrder(order, index))
 
       pagination.value = {
-        page: Number(body.pagination?.page ?? params?.page ?? 1),
-        limit: Number(body.pagination?.limit ?? params?.limit ?? 20),
-        total: Number(body.pagination?.total ?? orders.value.length),
-        pages: Number(body.pagination?.pages ?? 1),
+        page: Number(result?.page ?? body.pagination?.page ?? params?.page ?? 1),
+        limit: Number(result?.limit ?? body.pagination?.limit ?? params?.limit ?? 20),
+        total: Number(result?.total ?? body.pagination?.total ?? orders.value.length),
+        pages: Number(result?.pages ?? body.pagination?.pages ?? 1),
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load orders.'
@@ -250,13 +259,15 @@ export const useOrdersStore = defineStore('orders', () => {
       })
 
       const body = (await response.json().catch(() => ({}))) as {
+        status?: number
+        msg?: string
         success?: boolean
         message?: string
         data?: ApiOrder
       }
 
       if (!response.ok || body.success === false) {
-        throw new Error(body.message || 'Failed to create order.')
+        throw new Error(body.msg || body.message || 'Failed to create order.')
       }
 
       if (body.data) {
