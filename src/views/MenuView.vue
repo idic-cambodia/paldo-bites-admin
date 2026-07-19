@@ -119,7 +119,13 @@ const solveImageUrl = (url: string | null | undefined) => {
 
         <!-- Edit modal -->
         <EditItemModal v-if="editing" :item="editing" @save="saveEdit" @close="editing = null" />
-        <CreateItemModal v-if="creating" :categories="tabs" @save="createItem" @close="creating = false" />
+        <CreateItemModal
+            v-if="creating"
+            :categories="tabs"
+            :initial-category="activeTab"
+            @save="createItem"
+            @close="creating = false"
+        />
     </div>
 </template>
 
