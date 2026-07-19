@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
 const SETTINGS_ENDPOINT = "/api/admin/settings";
@@ -21,22 +21,11 @@ type SettingsResponse = {
         pickupEnabled?: boolean;
         isOpen?: boolean;
         telegram?: string;
+        telegramSupport?: string;
         facebook?: string;
+        payment_link?: string;
+        payment_qr?: string;
     };
-};
-
-type SettingsPatchPayload = {
-    shopName: string;
-    location: string;
-    phone: string;
-    email: string;
-    openTime: string;
-    maxOrdersPerDay: number;
-    grabEnabled: boolean;
-    pickupEnabled: boolean;
-    telegram?: string;
-    facebook?: string;
-    isOpen?: boolean;
 };
 
 const auth = useAuthStore();
@@ -50,7 +39,12 @@ const grabEnabled = ref(true);
 const pickupEnabled = ref(true);
 const maxOrders = ref(50);
 const telegram = ref("");
+const telegramSupport = ref("");
 const facebook = ref("");
+const paymentLink = ref("");
+const paymentQr = ref("");
+const paymentQrFile = ref<File | null>(null);
+const paymentQrPreview = ref("");
 const isOpen = ref(true);
 
 const loading = ref(false);
@@ -65,19 +59,21 @@ async function save() {
     }
 
     const authorization = auth.token.startsWith("Bearer ") ? auth.token : `Bearer ${auth.token}`;
-    const payload: SettingsPatchPayload = {
-        shopName: shopName.value.trim(),
-        location: location.value.trim(),
-        phone: phone.value.trim(),
-        email: email.value.trim(),
-        openTime: openTime.value,
-        maxOrdersPerDay: Number(maxOrders.value || 0),
-        grabEnabled: grabEnabled.value,
-        pickupEnabled: pickupEnabled.value,
-        telegram: telegram.value.trim() || undefined,
-        facebook: facebook.value.trim() || undefined,
-        isOpen: isOpen.value
-    };
+    const payload = new FormData();
+    payload.append("shopName", shopName.value.trim());
+    payload.append("location", location.value.trim());
+    payload.append("phone", phone.value.trim());
+    payload.append("email", email.value.trim());
+    payload.append("openTime", openTime.value);
+    payload.append("maxOrdersPerDay", String(Number(maxOrders.value || 0)));
+    payload.append("grabEnabled", String(grabEnabled.value));
+    payload.append("pickupEnabled", String(pickupEnabled.value));
+    payload.append("telegram", telegram.value.trim());
+    payload.append("telegramSupport", telegramSupport.value.trim());
+    payload.append("facebook", facebook.value.trim());
+    payload.append("payment_link", paymentLink.value.trim());
+    payload.append("isOpen", String(isOpen.value));
+    if (paymentQrFile.value) payload.append("payment_qr", paymentQrFile.value);
 
     saving.value = true;
     error.value = "";
@@ -85,10 +81,9 @@ async function save() {
         const response = await fetch(SETTINGS_ENDPOINT, {
             method: "PATCH",
             headers: {
-                "Content-Type": "application/json",
                 Authorization: authorization
             },
-            body: JSON.stringify(payload)
+            body: payload
         });
 
         const body = (await response.json().catch(() => ({}))) as SettingsResponse;
@@ -141,7 +136,11 @@ async function fetchSettings() {
         grabEnabled.value = Boolean(body.data.grabEnabled);
         pickupEnabled.value = Boolean(body.data.pickupEnabled);
         telegram.value = body.data.telegram || "";
+        telegramSupport.value = body.data.telegramSupport || "";
         facebook.value = body.data.facebook || "";
+        paymentLink.value = body.data.payment_link || "";
+        paymentQr.value = body.data.payment_qr || "";
+        paymentQrPreview.value = body.data.payment_qr || "";
         isOpen.value = Boolean(body.data.isOpen ?? true);
     } catch (err) {
         error.value = err instanceof Error ? err.message : "Failed to load settings.";
@@ -150,8 +149,22 @@ async function fetchSettings() {
     }
 }
 
+function selectPaymentQr(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    if (!file) return;
+
+    if (paymentQrPreview.value.startsWith("blob:")) URL.revokeObjectURL(paymentQrPreview.value);
+    paymentQrFile.value = file;
+    paymentQrPreview.value = URL.createObjectURL(file);
+}
+
 onMounted(() => {
     fetchSettings();
+});
+
+onUnmounted(() => {
+    if (paymentQrPreview.value.startsWith("blob:")) URL.revokeObjectURL(paymentQrPreview.value);
 });
 </script>
 
@@ -204,6 +217,34 @@ onMounted(() => {
                             </a>
                         </div>
                     </div>
+                </div>
+                <div class="field">
+                    <label>Telegram Support</label>
+                    <input v-model="telegramSupport" type="text" placeholder="shawarmapaldokh" />
+                    <div v-if="telegramSupport" class="social-link">
+                        <a :href="`https://t.me/${telegramSupport}`" target="_blank" rel="noopener noreferrer">
+                            {{ `https://t.me/${telegramSupport}` }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment -->
+        <section class="settings-card">
+            <h3 class="card-title">💳 Payment</h3>
+            <div class="fields">
+                <div class="field">
+                    <label>Payment Link</label>
+                    <input v-model="paymentLink" type="url" placeholder="https://..." />
+                </div>
+                <div class="field">
+                    <label>Payment QR</label>
+                    <label class="image-picker">
+                        <input type="file" accept="image/*" @change="selectPaymentQr" />
+                        <span>{{ paymentQrFile ? paymentQrFile.name : "Choose QR image" }}</span>
+                    </label>
+                    <img v-if="paymentQrPreview" :src="paymentQrPreview" alt="Payment QR preview" class="qr-preview" />
                 </div>
             </div>
         </section>
@@ -367,6 +408,36 @@ onMounted(() => {
 }
 .field input:focus {
     border-color: var(--brand);
+}
+.image-picker {
+    display: flex !important;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    color: var(--text) !important;
+}
+.image-picker:hover {
+    border-color: var(--brand);
+}
+.image-picker input {
+    display: none;
+}
+.qr-preview {
+    display: block;
+    width: 180px;
+    height: 180px;
+    margin-top: 12px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px;
 }
 .two-col {
     display: grid;
