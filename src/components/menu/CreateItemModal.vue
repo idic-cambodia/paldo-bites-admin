@@ -4,6 +4,7 @@ import type { MenuCategory } from "@/types";
 
 const props = defineProps<{
     categories?: MenuCategory[];
+    initialCategory?: MenuCategory;
 }>();
 
 const emit = defineEmits<{
@@ -24,7 +25,7 @@ const emit = defineEmits<{
 
 const name = ref("");
 const price = ref<number | null>(null);
-const category = ref<MenuCategory>("Ulam");
+const category = ref<MenuCategory>(props.initialCategory?.trim() || props.categories?.[0] || "Ulam");
 const desc = ref("");
 const available = ref(true);
 const minQty = ref<number | null>(null);
